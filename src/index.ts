@@ -8,6 +8,7 @@ import {
   requestTokenForClient,
   redirectToIdpStandard,
   redirectToIdpImplicit,
+  refreshAccessToken,
 } from "./auth_controller";
 
 dotenv.config();
@@ -25,6 +26,8 @@ app.get("/auth/implicit", redirectToIdpImplicit); // Implicit Flow
 app.get("/auth/direct", requestTokenDirect); // Password Flow
 
 app.get("/auth/client", requestTokenForClient); // Client Credentials Flow
+
+app.get("/auth/refresh", refreshAccessToken); // Refresh Token Flow
 
 //region: Redirects
 

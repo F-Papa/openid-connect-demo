@@ -44,7 +44,8 @@ type Grant =
   | "authorization_code"
   | "password"
   | "implicit"
-  | "client_credentials";
+  | "client_credentials"
+  | "refresh_token";
 
 function isString(arg: unknown): arg is string {
   return typeof arg === "string";
@@ -76,6 +77,19 @@ export const redirectToIdpImplicit = async (req: Request, res: Response) => {
 
 export const redirectToIdpStandard = (req: Request, res: Response) => {
   redirectToIdp(res, "authorization_code");
+};
+
+export const refreshAccessToken = async (req: Request, res: Response) => {
+  const refreshToken: unknown = req.query.refresh_token;
+  if (isString(refreshToken)) {
+    const refreshReq = refreshTokenRequest(refreshToken);
+    const tokenResponse = await fetch(refreshReq).then((response) =>
+      response.json()
+    );
+
+    return res.send(tokenResponse);
+  }
+  res.status(400).send("Invalid Code");
 };
 
 const redirectToIdp = (
@@ -128,6 +142,25 @@ const exchangeCodeRequest = (code: string): globalThis.Request => {
   if (isString(CODE_VERIFIER) && PKCE === PKCE_ENABLED) {
     searchParams.append("code_verifier", CODE_VERIFIER);
   }
+
+  return new Request(
+    `${IDP_URL}/realms/${REALM}/protocol/openid-connect/token`,
+    {
+      method: "POST",
+      body: searchParams,
+    }
+  );
+};
+const refreshTokenRequest = (refreshToken: string): globalThis.Request => {
+  const redirect_uri = `${APP_URL}/auth/redirect/code` as const;
+
+  const grant: Grant = "refresh_token";
+  const searchParams = new URLSearchParams();
+  searchParams.append("grant_type", grant);
+  searchParams.append("client_id", CLIENT_ID);
+  searchParams.append("client_secret", CLIENT_SECRET);
+  searchParams.append("redirect_uri", redirect_uri);
+  searchParams.append("refresh_token", refreshToken);
 
   return new Request(
     `${IDP_URL}/realms/${REALM}/protocol/openid-connect/token`,

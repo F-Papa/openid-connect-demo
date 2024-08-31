@@ -90,3 +90,8 @@ This will get an access token directly from keycloak without any redirect (usern
 
 This flow is for authenticating the client rather than the user and it will get an access token directly from keycloak without any redirect using the client_id and client_secret in the .env file. Once retrieved, the token will be displayed on the screen. 
 
+### Refresh Token Flow
+
+- /auth/refresh?refresh_token={{REFRESH_TOKEN}}
+
+This flow is for refreshing the access token previously with the refresh token included in the original response. It needs to be added to the query parameter as shown above
