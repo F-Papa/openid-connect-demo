@@ -56,12 +56,16 @@ export const implicitFlowPage = async (req: Request, res: Response) => {
   );
 };
 
-export const requestAccessToken = async (req: Request, res: Response) => {
+export const exchangeCode = async (req: Request, res: Response) => {
   const code: unknown = req.query.code;
 
   if (isString(code)) {
-    const resp = await requestAccessTokenFromCode(code);
-    return res.send(resp);
+    const exchangeReq = exchangeCodeRequest(code);
+    const tokenResponse = await fetch(exchangeReq).then((response) =>
+      response.json()
+    );
+
+    return res.send(tokenResponse);
   }
   res.status(400).send("Invalid code");
 };
@@ -110,7 +114,7 @@ const redirectToIdp = (
   res.redirect(authUrl.toString());
 };
 
-const requestAccessTokenFromCode = async (code: string) => {
+const exchangeCodeRequest = (code: string): globalThis.Request => {
   const redirect_uri = `${APP_URL}/auth/redirect/code` as const;
 
   const grant: Grant = "authorization_code";
@@ -125,17 +129,13 @@ const requestAccessTokenFromCode = async (code: string) => {
     searchParams.append("code_verifier", CODE_VERIFIER);
   }
 
-  const request = new Request(
+  return new Request(
     `${IDP_URL}/realms/${REALM}/protocol/openid-connect/token`,
     {
       method: "POST",
       body: searchParams,
     }
   );
-
-  return await fetch(request)
-    .then((response) => response.json())
-    .then((response) => response);
 };
 
 export const requestTokenDirect = async (req: Request, res: Response) => {

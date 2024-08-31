@@ -3,7 +3,7 @@ import express from "express";
 import dotenv from "dotenv";
 import {
   requestTokenDirect,
-  requestAccessToken,
+  exchangeCode,
   implicitFlowPage,
   requestTokenForClient,
   redirectToIdpStandard,
@@ -30,7 +30,7 @@ app.get("/auth/client", requestTokenForClient); // Client Credentials Flow
 
 app.get("/auth/redirect/implicit", implicitFlowPage); // Redirect for Implicit Flow
 
-app.get("/auth/redirect/code", requestAccessToken); // Redirect for Authorization Code Flow
+app.get("/auth/redirect/code", exchangeCode); // Redirect for Authorization Code Flow
 
 app.listen(PORT, () => {
   console.log("Started on port", PORT);
