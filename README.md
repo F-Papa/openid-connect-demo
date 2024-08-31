@@ -60,7 +60,7 @@ Once the app is running, access the following endpoints to follow the correspond
 
 ### Standard Flow
 
-- /auth/code
+- GET /auth/code
 
 This will redirect you to keycloak, where you will be prompted to enter your username and password (if you haven't already). Subsequently, you will be redirected to /auth/redirect/code where the app will exchange the authentication code for an access token, which will be displayed on screen.  
 
@@ -74,24 +74,24 @@ To enable PCKE:
 
 ### Implicit Flow
 
-- /auth/implicit
+- GET /auth/implicit
 
 This will redirect you to keycloak, where you will be prompted to enter your username and password (if you haven't already). Subsequently, you will be redirected to /auth/redirect/implicit where a javascript alert will display the token received. This is because for this flow, the token is kept in the browser and the client cannot access it directly.
 
 ### Direct Grant Flow
 
-- /auth/direct
+- GET /auth/direct
 
 This will get an access token directly from keycloak without any redirect (username and password in the .env file are used) and it will be displayed on the screen. 
 
 ### Client Credentials Flow
 
-- /auth/client
+- GET /auth/client
 
 This flow is for authenticating the client rather than the user and it will get an access token directly from keycloak without any redirect using the client_id and client_secret in the .env file. Once retrieved, the token will be displayed on the screen. 
 
 ### Refresh Token Flow
 
-- /auth/refresh?refresh_token={{REFRESH_TOKEN}}
+- GET /auth/refresh?refresh_token={{REFRESH_TOKEN}}
 
 This flow is for refreshing the access token previously with the refresh token included in the original response. It needs to be added to the query parameter as shown above
