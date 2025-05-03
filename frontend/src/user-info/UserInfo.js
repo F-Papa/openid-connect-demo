@@ -8,9 +8,12 @@ export default function UserInfo({ parsedToken }) {
         <b>Usuario:</b> {parsedToken.username}
       </div>
       <div>
+        <b>Válido hasta:</b> {parsedToken.expires_at}
+      </div>
+      <div>
         <b>Roles:</b>
         <ul>
-          {parsedToken.roles.map((role) => (
+          {parsedToken.roles?.map((role) => (
             <li>{role}</li>
           ))}
         </ul>
