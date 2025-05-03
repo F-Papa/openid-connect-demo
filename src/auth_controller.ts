@@ -23,7 +23,7 @@ if (PKCE === PKCE_ENABLED) {
   console.log("PKCE is Disabled");
 }
 
-const randomVerifier = () =>
+const createRandomPckeVerifier = () =>
   crypto
     .randomBytes(64)
     .toString("base64")
@@ -31,6 +31,7 @@ const randomVerifier = () =>
     .replace(/\//g, "_")
     .replace(/=/g, "");
 
+/** Creates a PCKE challenge from the verifier by hashing it */
 const challengeFromVerifier = (ver: string): string =>
   crypto
     .createHash("sha256")
@@ -51,9 +52,9 @@ function isString(arg: unknown): arg is string {
   return typeof arg === "string";
 }
 
-export const implicitFlowPage = async (req: Request, res: Response) => {
+export const implicitFlowPage = async (_req: Request, res: Response) => {
   res.send(
-    `<script>var type = window.location.hash.substring(1); alert(type);</script>`
+    `<script>var type = window.location.hash.substring(1); alert(type);</script>`,
   );
 };
 
@@ -63,7 +64,7 @@ export const exchangeCode = async (req: Request, res: Response) => {
   if (isString(code)) {
     const exchangeReq = exchangeCodeRequest(code);
     const tokenResponse = await fetch(exchangeReq).then((response) =>
-      response.json()
+      response.json(),
     );
 
     return res.send(tokenResponse);
@@ -71,12 +72,15 @@ export const exchangeCode = async (req: Request, res: Response) => {
   res.status(400).send("Invalid code");
 };
 
-export const redirectToIdpImplicit = async (req: Request, res: Response) => {
-  redirectToIdp(res, "implicit");
+export const redirectToIdentityProviderImplicit = async (
+  _req: Request,
+  res: Response,
+) => {
+  redirectToIdentityProvider(res, "implicit");
 };
 
-export const redirectToIdpStandard = (req: Request, res: Response) => {
-  redirectToIdp(res, "authorization_code");
+export const redirectToIdpStandard = (_req: Request, res: Response) => {
+  redirectToIdentityProvider(res, "authorization_code");
 };
 
 export const refreshAccessToken = async (req: Request, res: Response) => {
@@ -84,7 +88,7 @@ export const refreshAccessToken = async (req: Request, res: Response) => {
   if (isString(refreshToken)) {
     const refreshReq = refreshTokenRequest(refreshToken);
     const tokenResponse = await fetch(refreshReq).then((response) =>
-      response.json()
+      response.json(),
     );
 
     return res.send(tokenResponse);
@@ -92,37 +96,28 @@ export const refreshAccessToken = async (req: Request, res: Response) => {
   res.status(400).send("Invalid Code");
 };
 
-const redirectToIdp = (
+const redirectToIdentityProvider = (
   res: Response,
-  grant_type: "authorization_code" | "implicit"
+  grant_type: "authorization_code" | "implicit",
 ) => {
   let authUrl = new URL(
-    `${IDP_URL}/realms/${REALM}/protocol/openid-connect/auth`
+    `${IDP_URL}/realms/${REALM}/protocol/openid-connect/auth`,
   );
 
-  authUrl.searchParams.append("client_id", CLIENT_ID);
+  const searchParams = authUrl.searchParams;
+  searchParams.append("client_id", CLIENT_ID);
 
   if (grant_type === "authorization_code") {
     if (PKCE === PKCE_ENABLED) {
-      CODE_VERIFIER = randomVerifier();
-      authUrl.searchParams.append("code_challenge_method", "S256");
-      authUrl.searchParams.append(
-        "code_challenge",
-        challengeFromVerifier(CODE_VERIFIER)
-      );
+      CODE_VERIFIER = createRandomPckeVerifier();
+      searchParams.set("code_challenge_method", "S256");
+      searchParams.set("code_challenge", challengeFromVerifier(CODE_VERIFIER));
     }
-
-    authUrl.searchParams.append("response_type", "code");
-    authUrl.searchParams.append(
-      "redirect_uri",
-      `${APP_URL}/auth/redirect/code`
-    );
+    searchParams.set("response_type", "code");
+    searchParams.set("redirect_uri", `${APP_URL}/auth/redirect/code`);
   } else {
-    authUrl.searchParams.append("response_type", "token");
-    authUrl.searchParams.append(
-      "redirect_uri",
-      `${APP_URL}/auth/redirect/implicit`
-    );
+    searchParams.set("response_type", "token");
+    searchParams.set("redirect_uri", `${APP_URL}/auth/redirect/implicit`);
   }
 
   res.redirect(authUrl.toString());
@@ -148,7 +143,7 @@ const exchangeCodeRequest = (code: string): globalThis.Request => {
     {
       method: "POST",
       body: searchParams,
-    }
+    },
   );
 };
 const refreshTokenRequest = (refreshToken: string): globalThis.Request => {
@@ -167,11 +162,11 @@ const refreshTokenRequest = (refreshToken: string): globalThis.Request => {
     {
       method: "POST",
       body: searchParams,
-    }
+    },
   );
 };
 
-export const requestTokenDirect = async (req: Request, res: Response) => {
+export const requestTokenDirect = async (_req: Request, res: Response) => {
   const url = `${IDP_URL}/realms/${REALM}/protocol/openid-connect/token`;
   const grant: Grant = "password";
 
@@ -194,7 +189,7 @@ export const requestTokenDirect = async (req: Request, res: Response) => {
   res.send(response);
 };
 
-export const requestTokenForClient = async (req: Request, res: Response) => {
+export const requestTokenForClient = async (_req: Request, res: Response) => {
   const url = `${IDP_URL}/realms/${REALM}/protocol/openid-connect/token`;
   const grant: Grant = "client_credentials";
 

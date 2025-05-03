@@ -7,7 +7,7 @@ import {
   implicitFlowPage,
   requestTokenForClient,
   redirectToIdpStandard,
-  redirectToIdpImplicit,
+  redirectToIdentityProviderImplicit,
   refreshAccessToken,
 } from "./auth_controller";
 
@@ -21,7 +21,7 @@ const app = express();
 
 app.get("/auth/code", redirectToIdpStandard); // Authentication Code (Standard) Flow
 
-app.get("/auth/implicit", redirectToIdpImplicit); // Implicit Flow
+app.get("/auth/implicit", redirectToIdentityProviderImplicit); // Implicit Flow
 
 app.get("/auth/direct", requestTokenDirect); // Password Flow
 
