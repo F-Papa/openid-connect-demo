@@ -8,24 +8,25 @@
 
 ## Requirements
 
-- A Running instance of Keycloak
+- A Running instance of Keycloak, which can be obtained by running:
 
 > docker run -d -p 8080:8080 -e KEYCLOAK_ADMIN=admin -e KEYCLOAK_ADMIN_PASSWORD=your-password -e KC_PROXY=edge --restart always -v /your/projet/path:/opt/jboss/keycloak/standalone/data quay.io/keycloak/keycloak:23.0.6 start-dev
 
-## Setup
+## Backend Setup
 
 ### App
 
-1. Save your app's URL in the `.env` file (e.g http://localhost:4000)
-2. Save the URL where keycloak will be running in the `.env` file (e.g. http://localhost:8080)
-3. Save the PORT where the app will be running in the `.env` file (e.g 4000)
+1. Copy `backend/.env.example` into `backend/.env`
+2. Save your app's URL in the `.env` file (e.g http://localhost:4000)
+3. Save the URL where keycloak will be running in the `.env` file (e.g. http://localhost:8080)
+4. Save the PORT where the app will be running in the `.env` file (e.g 4000)
 
 ### Keycloak
 
 #### Realm Setup
 
-1. Log into Keycloak admin panel (http://localhost:8080/admin, user: admin, password: password)
-2. Create a Realm
+1. Log into the Keycloak admin panel (http://localhost:8080/admin, user: admin, password: password)
+2. Click on `master` (top left) and select Create a Realm from the drop-down menu
    1. Enter a name for the new Realm (e.g. criptografia-y-seguridad-informatica)
    2. Paste your new realm's name into the `.env` file next to `REALM=`
    3. Click Save
