@@ -46,7 +46,7 @@
 
 6. For `Valid redirect URIs` enter:
 
-   - `{{URL_FOR_THIS_APP}}/auth/redirect/*` (e.g. http://localhost:4000/auth/redirect/\*)
+   - `{{URL_FOR_THIS_APP}}/auth/redirect/*` (e.g. `http://localhost:4000/auth/redirect/*`)
 
 7. For `Web Origins`:
 
