@@ -3,7 +3,7 @@
 ### How to Run
 
 ```bash
-npm start
+./start-app.sh
 ```
 
 ## Requirements
