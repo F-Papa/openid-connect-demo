@@ -35,17 +35,6 @@ export default function Home() {
             <a href="/auth/implicit">Elegir</a>
           </div>
         </li>
-        <li>
-          <div class="flow">
-            <h3>Direct Grant</h3>
-            <span>
-              El cliente ya conoce las credenciales del usuario y las envía
-              directamente al Identity Provider, a lo que este responde con el
-              JWT
-            </span>
-            <a href="/auth/direct">Elegir</a>
-          </div>
-        </li>
       </ul>
     </div>
   );
