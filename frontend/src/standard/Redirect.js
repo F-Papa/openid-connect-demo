@@ -1,10 +1,12 @@
 import JsonView from "@uiw/react-json-view";
 import { jwtDecode } from "jwt-decode";
 import "../shared/Shared.css";
+import { saveAccessToken } from "../shared/utils";
 
 export default function Redirect() {
   const searchParams = new URLSearchParams(window.location.search);
   const jwt = searchParams.get("access_token");
+  saveAccessToken(jwt);
   return (
     <main>
       <h1>Atenticación exitosa</h1>

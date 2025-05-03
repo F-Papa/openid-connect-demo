@@ -1,6 +1,7 @@
 import JsonView from "@uiw/react-json-view";
 import { jwtDecode } from "jwt-decode";
 import "../shared/Shared.css";
+import { saveAccessToken } from "../shared/utils";
 
 const parseSession = (session) => {
   const jwtRegex = /.*access_token=(.*)&token_type.*/;
@@ -10,6 +11,7 @@ const parseSession = (session) => {
 
 export default function Redirect() {
   const jwt = parseSession(window.location.hash.substring(1));
+  saveAccessToken(jwt);
   return (
     <main>
       <h1>Atenticación exitosa</h1>
