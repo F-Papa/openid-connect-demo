@@ -12,6 +12,7 @@ export const getParsedAccessToken = () => {
 
   const expirationDate = new Date(parsedToken.exp * 1000);
   if (expirationDate <= new Date()) {
+    localStorage.removeItem("access_token");
     return;
   }
 
