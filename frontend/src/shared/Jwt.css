@@ -1,0 +1,12 @@
+.jwt {
+  margin-top: 1em;
+  margin-bottom: 1em;
+  text-wrap: wrap;
+  word-wrap: break-word;
+  max-width: 50vw;
+  padding: 1em;
+  color: blue;
+  border-radius: 1em;
+  border: solid blue 1px;
+  background-color: #82a3cf;
+}

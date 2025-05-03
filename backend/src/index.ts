@@ -31,8 +31,6 @@ app.get("/auth/refresh", refreshAccessToken); // Refresh Token Flow
 
 //region: Redirects
 
-app.get("/auth/redirect/implicit", implicitFlowPage); // Redirect for Implicit Flow
-
 app.get("/auth/redirect/code", exchangeCode); // Redirect for Authorization Code Flow
 
 app.listen(PORT, () => {

@@ -14,6 +14,8 @@ const PASSWORD = process.env.PASSWORD || "";
 const PKCE = process.env.PKCE || "";
 
 let CODE_VERIFIER: string | null;
+const FRONTEND_URL = "http://localhost:3000";
+let TOKEN_RESPONSE: Record<string, unknown>;
 
 const PKCE_ENABLED = "1";
 
@@ -63,11 +65,16 @@ export const exchangeCode = async (req: Request, res: Response) => {
 
   if (isString(code)) {
     const exchangeReq = exchangeCodeRequest(code);
-    const tokenResponse = await fetch(exchangeReq).then((response) =>
-      response.json(),
-    );
+    TOKEN_RESPONSE = (await fetch(exchangeReq).then(
+      (response: globalThis.Response) => response.json(),
+    )) as Record<string, unknown>;
 
-    return res.send(tokenResponse);
+    console.log("----------------## TOKEN RESPONSE ##----------------");
+    console.log(JSON.stringify(TOKEN_RESPONSE, null, 3));
+    console.log("--------------## END TOKEN RESPONSE ##--------------");
+    return res.redirect(
+      `${FRONTEND_URL}/auth/code/redirect?access_token=${TOKEN_RESPONSE.access_token}`,
+    );
   }
   res.status(400).send("Invalid code");
 };
@@ -117,7 +124,7 @@ const redirectToIdentityProvider = (
     searchParams.set("redirect_uri", `${APP_URL}/auth/redirect/code`);
   } else {
     searchParams.set("response_type", "token");
-    searchParams.set("redirect_uri", `${APP_URL}/auth/redirect/implicit`);
+    searchParams.set("redirect_uri", `${FRONTEND_URL}/auth/implicit/redirect`);
   }
 
   res.redirect(authUrl.toString());

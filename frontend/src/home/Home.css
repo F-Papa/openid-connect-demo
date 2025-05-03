@@ -1,0 +1,17 @@
+.App {
+  padding: 2em;
+}
+
+.flow {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  padding: 1em;
+  max-width: 400px;
+  gap: 1em;
+}
+
+h2,
+h3 {
+  margin: 0;
+}
