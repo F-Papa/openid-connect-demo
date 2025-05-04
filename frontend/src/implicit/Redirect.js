@@ -14,22 +14,26 @@ export default function Redirect() {
   saveAccessToken(jwt);
   return (
     <main>
-      <h1>Atenticación exitosa (Implicit Flow)</h1>
-      <h2>Explicación</h2>
       <div>
-        El usuario fue autenticado exitosamente. El Identity provider lo
-        redirigió directamente a esta página con el siguiente access_token
-        embebido en la URI como search param:
+        <h1>Atenticación exitosa (Implicit Flow)</h1>
+        <h2>Explicación</h2>
+        <div>
+          El usuario fue autenticado exitosamente. El Identity provider lo
+          redirigió directamente a esta página con el siguiente access_token
+          embebido en la URI como search param:
+        </div>
+        <div className="code">
+          <h4>access_token:</h4>
+          {jwt}
+        </div>
       </div>
-      <div className="code">
-        <h4>access_token:</h4>
-        {jwt}
-      </div>
-      <h2>JWT Decodificado:</h2>
       <div>
-        A continuación pueden verse los datos incluidos en el JWT decodificado
+        <h2>JWT Decodificado:</h2>
+        <div>
+          A continuación pueden verse los datos incluidos en el JWT decodificado
+        </div>
+        <JsonView className="json-view" value={jwtDecode(jwt)} />
       </div>
-      <JsonView className="json-view" value={jwtDecode(jwt)} />
     </main>
   );
 }

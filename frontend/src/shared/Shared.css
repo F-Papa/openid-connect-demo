@@ -1,9 +1,22 @@
 main {
-  padding: 0em 2em;
+  display: grid;
+  grid-template-columns: 1fr 33%;
+  min-height: 100vh;
 }
+
+main > div:nth-of-type(1) {
+  padding: 0em 2em;
+  border-right: 2px gray solid;
+}
+
+main > div:nth-of-type(2) {
+  padding: 2em;
+}
+
 .json-view {
   margin-top: 2em;
 }
+
 h4 {
   margin: 0;
 }
