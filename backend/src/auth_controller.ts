@@ -1,6 +1,6 @@
 import * as dotenv from "dotenv";
 import { Request, Response } from "express";
-import crypto from "crypto";
+import crypto, { verify } from "crypto";
 
 dotenv.config();
 
@@ -61,7 +61,7 @@ export const implicitFlowPage = async (_req: Request, res: Response) => {
 };
 
 export const exchangeCode = async (req: Request, res: Response) => {
-  const code: unknown = req.query.code;
+  const code = req.query.code;
 
   if (isString(code)) {
     const exchangeReq = exchangeCodeRequest(code);
@@ -73,7 +73,7 @@ export const exchangeCode = async (req: Request, res: Response) => {
     console.log(JSON.stringify(TOKEN_RESPONSE, null, 3));
     console.log("--------------## END TOKEN RESPONSE ##--------------");
     return res.redirect(
-      `${FRONTEND_URL}/auth/code/redirect?access_token=${TOKEN_RESPONSE.access_token}`,
+      `${FRONTEND_URL}/auth/code/redirect?access_token=${TOKEN_RESPONSE.access_token}&code=${code}&verifier=${CODE_VERIFIER}&challenge=${challengeFromVerifier(<string>CODE_VERIFIER)}`,
     );
   }
   res.status(400).send("Invalid code");
@@ -94,11 +94,11 @@ export const refreshAccessToken = async (req: Request, res: Response) => {
   const refreshToken: unknown = req.query.refresh_token;
   if (isString(refreshToken)) {
     const refreshReq = refreshTokenRequest(refreshToken);
-    const tokenResponse = await fetch(refreshReq).then((response) =>
+    TOKEN_RESPONSE = (await fetch(refreshReq).then((response) =>
       response.json(),
-    );
+    )) as Record<string, unknown>;
 
-    return res.send(tokenResponse);
+    return res.send(TOKEN_RESPONSE);
   }
   res.status(400).send("Invalid Code");
 };
@@ -132,6 +132,10 @@ const redirectToIdentityProvider = (
 
 const exchangeCodeRequest = (code: string): globalThis.Request => {
   const redirect_uri = `${APP_URL}/auth/redirect/code` as const;
+
+  console.log("----------------## AUTHENTICATION CODE ##----------------");
+  console.log(code);
+  console.log("--------------## END AUTHENTICATION CODE ##--------------");
 
   const grant: Grant = "authorization_code";
   const searchParams = new URLSearchParams();

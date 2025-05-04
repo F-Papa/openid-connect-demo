@@ -1,3 +1,4 @@
+import { saveAccessToken } from "../shared/utils";
 import "./UserInfo.css";
 
 export default function UserInfo({ parsedToken }) {
@@ -18,6 +19,14 @@ export default function UserInfo({ parsedToken }) {
           ))}
         </ul>
       </div>
+      <button
+        onClick={() => {
+          saveAccessToken("");
+          window.location.reload();
+        }}
+      >
+        Cerrar Sesión
+      </button>
     </div>
   );
 }

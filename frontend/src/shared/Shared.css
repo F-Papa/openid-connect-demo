@@ -1,15 +1,21 @@
 main {
-  padding: 2em;
+  padding: 0em 2em;
 }
-.jwt {
+.json-view {
+  margin-top: 2em;
+}
+h4 {
+  margin: 0;
+}
+.code {
   margin-top: 1em;
   margin-bottom: 1em;
   text-wrap: wrap;
   word-wrap: break-word;
   max-width: 50vw;
   padding: 1em;
-  color: blue;
-  border-radius: 1em;
-  border: solid blue 1px;
-  background-color: #82a3cf;
+  color: #454545;
+  border: solid #616161 2px;
+  font-family: monospace;
+  background-color: #bab8b8;
 }

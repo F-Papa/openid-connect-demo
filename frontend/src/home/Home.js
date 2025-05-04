@@ -12,13 +12,24 @@ export default function Home() {
       <ul>
         <li>
           <div class="flow">
-            <h3>Authentication Code (Estándar)</h3>
-            <span>
-              Redirige al usuario a la página del Identity Provider para que
-              introduzca sus credenciales sin que el cliente (esta aplicación)
-              las vea. Una vez verificada su identidad, será redirigido a la uri
-              configurada por el cliente, proporcionándole el JWT al mismo.
-            </span>
+            <h3>Authentication Code (con PKCE)</h3>
+            <ol>
+              <li>
+                El <b>cliente</b> redirige al usuario a la página del{" "}
+                <b>Identity Provider</b> para que introduzca sus credenciales
+                sin que estas pasen por él.
+              </li>
+              <li>
+                El <b>Identity Provider</b> verifica la identidad del usuario y
+                lo redirige de vuelta al <b>cliente</b> junto con un{" "}
+                <b>código de autenticación</b>
+              </li>
+              <li>
+                El <b>cliente</b> hace una request al <b>Identity Provider</b>{" "}
+                para intercambiar el <b>código de autenticación</b> por el{" "}
+                <b>JWT</b>
+              </li>
+            </ol>
             <a href="/auth/code">Elegir</a>
           </div>
         </li>
@@ -26,11 +37,17 @@ export default function Home() {
           <div class="flow">
             <h3>Implicit Flow</h3>
             <span>
-              Redirige al usuario a la página del Identity Provider para que
-              introduzca sus credenciales sin que el cliente (esta aplicación)
-              las vea. Una vez verificada su identidad, será redirigido a la uri
-              configurada por el cliente. A diferencia del flujo Authentication
-              Code, el JWT permanece en el navegador del usuario
+              <ol>
+                <li>
+                  El <b>cliente</b> redirige al usuario a la página del{" "}
+                  <b>Identity Provider</b> para que introduzca sus credenciales
+                  sin que estas pasen por él.
+                </li>
+                <li>
+                  El <b>Identity Provider</b> verifica la identidad del usuario
+                  y lo redirige de vuelta al <b>cliente</b> junto con el JWT.
+                </li>
+              </ol>
             </span>
             <a href="/auth/implicit">Elegir</a>
           </div>
