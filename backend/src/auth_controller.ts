@@ -8,6 +8,7 @@ const CLIENT_ID = process.env.CLIENT_ID || "";
 const CLIENT_SECRET = process.env.CLIENT_SECRET || "";
 const APP_URL = process.env.APP_URL || "";
 const REALM = process.env.REALM || "";
+const LOGIN_URL = process.env.LOGIN_URL || "";
 const IDP_URL = process.env.IDP_URL || "";
 const USER = process.env.AUTH_USER || "";
 const PASSWORD = process.env.PASSWORD || "";
@@ -65,16 +66,21 @@ export const exchangeCode = async (req: Request, res: Response) => {
 
   if (isString(code)) {
     const exchangeReq = exchangeCodeRequest(code);
-    TOKEN_RESPONSE = (await fetch(exchangeReq).then(
-      (response: globalThis.Response) => response.json(),
-    )) as Record<string, unknown>;
+    try {
+      TOKEN_RESPONSE = (await fetch(exchangeReq).then(
+        (response: globalThis.Response) => response.json(),
+      )) as Record<string, unknown>;
 
-    console.log("----------------## TOKEN RESPONSE ##----------------");
-    console.log(JSON.stringify(TOKEN_RESPONSE, null, 3));
-    console.log("--------------## END TOKEN RESPONSE ##--------------");
-    return res.redirect(
-      `${FRONTEND_URL}/auth/code/redirect?access_token=${TOKEN_RESPONSE.access_token}&code=${code}&verifier=${CODE_VERIFIER}&challenge=${challengeFromVerifier(<string>CODE_VERIFIER)}`,
-    );
+      console.log("----------------## TOKEN RESPONSE ##----------------");
+      console.log(JSON.stringify(TOKEN_RESPONSE, null, 3));
+      console.log("--------------## END TOKEN RESPONSE ##--------------");
+      return res.redirect(
+        `${FRONTEND_URL}/auth/code/redirect?access_token=${TOKEN_RESPONSE.access_token}&code=${code}&verifier=${CODE_VERIFIER}&challenge=${challengeFromVerifier(<string>CODE_VERIFIER)}`,
+      );
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
   }
   res.status(400).send("Invalid code");
 };
@@ -108,7 +114,7 @@ const redirectToIdentityProvider = (
   grant_type: "authorization_code" | "implicit",
 ) => {
   let authUrl = new URL(
-    `${IDP_URL}/realms/${REALM}/protocol/openid-connect/auth`,
+    `${LOGIN_URL}/realms/${REALM}/protocol/openid-connect/auth`,
   );
 
   const searchParams = authUrl.searchParams;

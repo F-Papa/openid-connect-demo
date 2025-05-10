@@ -5,8 +5,8 @@ import { saveAccessToken } from "../shared/utils";
 
 const parseSession = (session) => {
   const jwtRegex = /.*access_token=(.*)&token_type.*/;
-  const [_match, jwt] = jwtRegex.exec(session);
-  return jwt;
+  const execResult = jwtRegex.exec(session);
+  return execResult[1];
 };
 
 export default function Redirect() {

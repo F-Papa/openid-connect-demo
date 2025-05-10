@@ -1,0 +1,27 @@
+services:
+  frontend:
+    container_name: frontend
+    build: ./frontend/
+    command: npm start
+    ports:
+      - 3000:3000
+    networks:
+      - test_network
+
+  backend:
+    container_name: backend
+    build: ./backend/
+    command: npx ts-node src/index.ts
+    volumes:
+      - ./backend/.env:/app/.env
+    ports:
+      - 4000:4000
+    networks:
+      - test_network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+networks:
+  test_network:
+    name: test_network
+    driver: bridge
