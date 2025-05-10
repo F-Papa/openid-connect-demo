@@ -3,6 +3,13 @@ services:
     container_name: frontend
     build: ./frontend/
     command: npm start
+    develop:
+      watch:
+        - action: sync
+          path: ./frontend/
+          target: /app
+    volumes:
+      - ./frontend/:/app/
     ports:
       - 3000:3000
     networks:
@@ -12,8 +19,14 @@ services:
     container_name: backend
     build: ./backend/
     command: npx ts-node src/index.ts
+    develop:
+      watch:
+        - action: sync
+          path: ./backend/
+          target: /app
     volumes:
-      - ./backend/.env:/app/.env
+      # - ./backend/.env:/app/.env
+      - ./backend/:/app/
     ports:
       - 4000:4000
     networks:
