@@ -4,7 +4,7 @@ export const saveAccessToken = (token) => {
   localStorage.setItem("access_token", token);
 };
 
-export const getParsedAccessToken = () => {
+export const getAccessToken = () => {
   const token = localStorage.getItem("access_token");
 
   if (!token) return;
@@ -20,5 +20,6 @@ export const getParsedAccessToken = () => {
     username: parsedToken.preferred_username,
     roles: parsedToken.realm_access.roles,
     expires_at: expirationDate.toLocaleString(),
+    raw: token,
   };
 };

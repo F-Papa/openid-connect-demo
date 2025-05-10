@@ -1,9 +1,9 @@
-import { getParsedAccessToken } from "../shared/utils";
+import { getAccessToken } from "../shared/utils";
 import UserInfo from "../user-info/UserInfo";
 import "./Home.css";
 
 export default function Home() {
-  const parsedToken = getParsedAccessToken();
+  const parsedToken = getAccessToken();
   return (
     <div className="App">
       <h1>Aplicación Demo Open ID Connect</h1>

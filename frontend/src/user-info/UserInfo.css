@@ -7,3 +7,9 @@
   margin-bottom: 1em;
   margin-top: 1em;
 }
+
+.token-container {
+  font-size: 10px;
+  text-wrap: wrap;
+  word-wrap: break-word;
+}

@@ -1,7 +1,13 @@
+import { useCallback } from "react";
 import { saveAccessToken } from "../shared/utils";
 import "./UserInfo.css";
 
 export default function UserInfo({ parsedToken }) {
+  const logout = useCallback(() => {
+    saveAccessToken("");
+    window.location.reload();
+  });
+
   return (
     <div className="user-info">
       <h2>Usuario autenticado</h2>
@@ -19,14 +25,11 @@ export default function UserInfo({ parsedToken }) {
           ))}
         </ul>
       </div>
-      <button
-        onClick={() => {
-          saveAccessToken("");
-          window.location.reload();
-        }}
-      >
-        Cerrar Sesión
-      </button>
+      <div>
+        <b>Token:</b>
+        <div className="token-container">{parsedToken.raw}</div>
+      </div>
+      <button onClick={logout}>Cerrar Sesión</button>
     </div>
   );
 }
