@@ -58,7 +58,7 @@ export const getAccessTokenFromCode = async (req: Request, res: Response) => {
 const exchangeCode = async (code: string): Promise<Record<string, unknown>> => {
   const exchangeReq = codeExchangeRequest(<string>code);
   const response = await fetch(exchangeReq).then((response) => response.json());
-  return response;
+  return response as Record<string, unknown>;
 };
 
 export const refreshAccessToken = async (req: Request, res: Response) => {
