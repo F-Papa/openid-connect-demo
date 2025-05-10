@@ -1,30 +1,16 @@
-import * as dotenv from "dotenv";
 import { Request, Response } from "express";
-import crypto, { verify } from "crypto";
+import assert from "assert";
+import crypto from "crypto";
+import { configFromEnv } from "./load-config";
+import { GRANT_TYPE } from "./types";
+import { isString, logWithEmphasis } from "./utils";
 
-dotenv.config();
-
-const CLIENT_ID = process.env.CLIENT_ID || "";
-const CLIENT_SECRET = process.env.CLIENT_SECRET || "";
-const APP_URL = process.env.APP_URL || "";
-const REALM = process.env.REALM || "";
-const LOGIN_URL = process.env.LOGIN_URL || "";
-const IDP_URL = process.env.IDP_URL || "";
-const USER = process.env.AUTH_USER || "";
-const PASSWORD = process.env.PASSWORD || "";
-const PKCE = process.env.PKCE || "";
-
+// NOTE: Code verifier and is stored in a global variable for the sake of example.
+// This would not work with concurrent login attempts
 let CODE_VERIFIER: string | null;
-const FRONTEND_URL = "http://localhost:3000";
 let TOKEN_RESPONSE: Record<string, unknown>;
 
-const PKCE_ENABLED = "1";
-
-if (PKCE === PKCE_ENABLED) {
-  console.log("PKCE is Enabled");
-} else {
-  console.log("PKCE is Disabled");
-}
+const config = configFromEnv();
 
 const createRandomPckeVerifier = () =>
   crypto
@@ -44,56 +30,35 @@ const challengeFromVerifier = (ver: string): string =>
     .replace(/\//g, "_")
     .replace(/=/g, "");
 
-type Grant =
-  | "authorization_code"
-  | "password"
-  | "implicit"
-  | "client_credentials"
-  | "refresh_token";
-
-function isString(arg: unknown): arg is string {
-  return typeof arg === "string";
-}
-
-export const implicitFlowPage = async (_req: Request, res: Response) => {
-  res.send(
-    `<script>var type = window.location.hash.substring(1); alert(type);</script>`,
-  );
-};
-
-export const exchangeCode = async (req: Request, res: Response) => {
+export const getAccessTokenFromCode = async (req: Request, res: Response) => {
   const code = req.query.code;
 
-  if (isString(code)) {
-    const exchangeReq = exchangeCodeRequest(code);
-    try {
-      TOKEN_RESPONSE = (await fetch(exchangeReq).then(
-        (response: globalThis.Response) => response.json(),
-      )) as Record<string, unknown>;
-
-      console.log("----------------## TOKEN RESPONSE ##----------------");
-      console.log(JSON.stringify(TOKEN_RESPONSE, null, 3));
-      console.log("--------------## END TOKEN RESPONSE ##--------------");
-      return res.redirect(
-        `${FRONTEND_URL}/auth/code/redirect?access_token=${TOKEN_RESPONSE.access_token}&code=${code}&verifier=${CODE_VERIFIER}&challenge=${challengeFromVerifier(<string>CODE_VERIFIER)}`,
-      );
-    } catch (error) {
-      console.log(error);
-      throw error;
-    }
+  if (!isString(code)) {
+    res.status(400).send("Invalid code");
   }
-  res.status(400).send("Invalid code");
+  const tokenResponse = await exchangeCode(<string>code);
+  logWithEmphasis("token response", tokenResponse);
+
+  assert(isString(CODE_VERIFIER));
+
+  const redirectUrl = new URL(`${config.FRONTEND_URL}/auth/code/redirect`);
+  const searchParams = redirectUrl.searchParams;
+
+  searchParams.set("access_token", <string>tokenResponse.access_token);
+
+  // NOTE: These three params are of no longer use.
+  // They are only sent to the frontend to visualize them for demonstration purposes.
+  searchParams.set("code", <string>code);
+  searchParams.set("verifier", CODE_VERIFIER);
+  searchParams.set("challenge", challengeFromVerifier(CODE_VERIFIER));
+
+  return res.redirect(redirectUrl.toString());
 };
 
-export const redirectToIdentityProviderImplicit = async (
-  _req: Request,
-  res: Response,
-) => {
-  redirectToIdentityProvider(res, "implicit");
-};
-
-export const redirectToIdpStandard = (_req: Request, res: Response) => {
-  redirectToIdentityProvider(res, "authorization_code");
+const exchangeCode = async (code: string): Promise<Record<string, unknown>> => {
+  const exchangeReq = codeExchangeRequest(<string>code);
+  const response = await fetch(exchangeReq).then((response) => response.json());
+  return response;
 };
 
 export const refreshAccessToken = async (req: Request, res: Response) => {
@@ -109,120 +74,96 @@ export const refreshAccessToken = async (req: Request, res: Response) => {
   res.status(400).send("Invalid Code");
 };
 
-const redirectToIdentityProvider = (
+export const redirectToIdentityProviderLogin = (
   res: Response,
-  grant_type: "authorization_code" | "implicit",
+  grant_type: GRANT_TYPE,
 ) => {
   let authUrl = new URL(
-    `${LOGIN_URL}/realms/${REALM}/protocol/openid-connect/auth`,
+    `${config.LOGIN_URL}/realms/${config.REALM}/protocol/openid-connect/auth`,
   );
 
   const searchParams = authUrl.searchParams;
-  searchParams.append("client_id", CLIENT_ID);
+  searchParams.append("client_id", config.CLIENT_ID);
 
-  if (grant_type === "authorization_code") {
-    if (PKCE === PKCE_ENABLED) {
+  if (grant_type === GRANT_TYPE.AUTHORIZATION_CODE) {
+    if (config.IS_PKCE_ENABLED) {
       CODE_VERIFIER = createRandomPckeVerifier();
       searchParams.set("code_challenge_method", "S256");
       searchParams.set("code_challenge", challengeFromVerifier(CODE_VERIFIER));
     }
     searchParams.set("response_type", "code");
-    searchParams.set("redirect_uri", `${APP_URL}/auth/redirect/code`);
+    searchParams.set("redirect_uri", `${config.APP_URL}/auth/redirect/code`);
   } else {
     searchParams.set("response_type", "token");
-    searchParams.set("redirect_uri", `${FRONTEND_URL}/auth/implicit/redirect`);
+    searchParams.set(
+      "redirect_uri",
+      `${config.FRONTEND_URL}/auth/implicit/redirect`,
+    );
   }
 
   res.redirect(authUrl.toString());
 };
 
-const exchangeCodeRequest = (code: string): globalThis.Request => {
-  const redirect_uri = `${APP_URL}/auth/redirect/code` as const;
+const codeExchangeRequest = (code: string): globalThis.Request => {
+  const redirectUri = `${config.APP_URL}/auth/redirect/code` as const;
 
-  console.log("----------------## AUTHENTICATION CODE ##----------------");
-  console.log(code);
-  console.log("--------------## END AUTHENTICATION CODE ##--------------");
+  logWithEmphasis("authentication code", code);
 
-  const grant: Grant = "authorization_code";
   const searchParams = new URLSearchParams();
-  searchParams.append("grant_type", grant);
-  searchParams.append("client_id", CLIENT_ID);
-  searchParams.append("client_secret", CLIENT_SECRET);
-  searchParams.append("redirect_uri", redirect_uri);
+  searchParams.append("grant_type", GRANT_TYPE.AUTHORIZATION_CODE);
+  searchParams.append("client_id", config.CLIENT_ID);
+  searchParams.append("client_secret", config.CLIENT_SECRET);
+  searchParams.append("redirect_uri", redirectUri);
   searchParams.append("code", code);
 
-  if (isString(CODE_VERIFIER) && PKCE === PKCE_ENABLED) {
+  if (config.IS_PKCE_ENABLED) {
+    assert(isString(CODE_VERIFIER));
     searchParams.append("code_verifier", CODE_VERIFIER);
   }
 
-  return new Request(
-    `${IDP_URL}/realms/${REALM}/protocol/openid-connect/token`,
-    {
-      method: "POST",
-      body: searchParams,
-    },
-  );
+  const requestUrl = `${config.IDP_URL}/realms/${config.REALM}/protocol/openid-connect/token`;
+  return new Request(requestUrl, { method: "POST", body: searchParams });
 };
 const refreshTokenRequest = (refreshToken: string): globalThis.Request => {
-  const redirect_uri = `${APP_URL}/auth/redirect/code` as const;
+  const redirectUri = `${config.APP_URL}/auth/redirect/code` as const;
 
-  const grant: Grant = "refresh_token";
   const searchParams = new URLSearchParams();
-  searchParams.append("grant_type", grant);
-  searchParams.append("client_id", CLIENT_ID);
-  searchParams.append("client_secret", CLIENT_SECRET);
-  searchParams.append("redirect_uri", redirect_uri);
+  searchParams.append("grant_type", GRANT_TYPE.REFRESH_TOKEN);
+  searchParams.append("client_id", config.CLIENT_ID);
+  searchParams.append("client_secret", config.CLIENT_SECRET);
+  searchParams.append("redirect_uri", redirectUri);
   searchParams.append("refresh_token", refreshToken);
 
-  return new Request(
-    `${IDP_URL}/realms/${REALM}/protocol/openid-connect/token`,
-    {
-      method: "POST",
-      body: searchParams,
-    },
-  );
+  const requestUrl = `${config.IDP_URL}/realms/${config.REALM}/protocol/openid-connect/token`;
+  return new Request(requestUrl, { method: "POST", body: searchParams });
 };
 
 export const requestTokenDirect = async (_req: Request, res: Response) => {
-  const url = `${IDP_URL}/realms/${REALM}/protocol/openid-connect/token`;
-  const grant: Grant = "password";
+  const url = `${config.IDP_URL}/realms/${config.REALM}/protocol/openid-connect/token`;
 
   const searchParams = new URLSearchParams();
-  searchParams.append("grant_type", grant);
-  searchParams.append("password", PASSWORD);
-  searchParams.append("client_id", CLIENT_ID);
-  searchParams.append("client_secret", CLIENT_SECRET);
-  searchParams.append("username", USER);
+  searchParams.append("grant_type", GRANT_TYPE.PASSWORD);
+  searchParams.append("password", config.PASSWORD);
+  searchParams.append("client_id", config.CLIENT_ID);
+  searchParams.append("client_secret", config.CLIENT_SECRET);
+  searchParams.append("username", config.USER);
 
-  const request = new Request(url, {
-    method: "POST",
-    body: searchParams,
-  });
-
-  const response = await fetch(request)
-    .then((response) => response.json())
-    .then((response) => response);
+  const request = new Request(url, { method: "POST", body: searchParams });
+  const response = await fetch(request).then((response) => response.json());
 
   res.send(response);
 };
 
 export const requestTokenForClient = async (_req: Request, res: Response) => {
-  const url = `${IDP_URL}/realms/${REALM}/protocol/openid-connect/token`;
-  const grant: Grant = "client_credentials";
+  const url = `${config.IDP_URL}/realms/${config.REALM}/protocol/openid-connect/token`;
 
   const searchParams = new URLSearchParams();
-  searchParams.append("grant_type", grant);
-  searchParams.append("client_id", CLIENT_ID);
-  searchParams.append("client_secret", CLIENT_SECRET);
+  searchParams.append("grant_type", GRANT_TYPE.CLIENT_CREDENTIALS);
+  searchParams.append("client_id", config.CLIENT_ID);
+  searchParams.append("client_secret", config.CLIENT_SECRET);
 
-  const request = new Request(url, {
-    method: "POST",
-    body: searchParams,
-  });
-
-  const response = await fetch(request)
-    .then((response) => response.json())
-    .then((response) => response);
+  const request = new Request(url, { method: "POST", body: searchParams });
+  const response = await fetch(request).then((response) => response.json());
 
   res.send(response);
 };
