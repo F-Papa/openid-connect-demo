@@ -2,18 +2,45 @@
 
 ## Instructions
 
-### Starting an instance of Keycloak
+### Starting the Application
 
-> docker run -d -p 8080:8080 -e KEYCLOAK_ADMIN=admin -e KEYCLOAK_ADMIN_PASSWORD=password -e KC_PROXY=edge --restart always -v /your/projet/path:/opt/jboss/keycloak/standalone/data quay.io/keycloak/keycloak:23.0.6 start-dev
+1. Start a Keycloak container by running the following command: 
 
-### Configuring the Keycloak Realm
+```bash
+docker run -d -p 8080:8080 -e KEYCLOAK_ADMIN=admin -e KEYCLOAK_ADMIN_PASSWORD=password -e KC_PROXY=edge --restart always -v /your/projet/path:/opt/jboss/keycloak/standalone/data quay.io/keycloak/keycloak:23.0.6 start-dev
+```
+2. Install python-keycloak:
+
+```bash
+pip3 install python-keycloak
+```
+3. Configure Keycloak with the Python script:
+
+```bash
+python3 setup/setup-keycloak.py
+```
+> NOTE: If python is not installed, checkout [Manual Setup](#Manual-Setup)
+
+4. Copy the `CLIENT_SECRET` from the script's output and paste it in `backend/.env`
+
+5. Start the frontend and backend applications by running the following command from the repo's root directory: 
+
+```bash
+docker compose up --build
+```
+
+6. Access the frontend at: http://localhost:3000
+
+## Manual Setup
+
+#### Configuring the Keycloak Realm
 
 1. Log into the Keycloak admin panel (http://localhost:8080/admin, user: admin, password: password)
 2. Click on `master` (top left) and select Create a Realm from the drop-down menu
    1. Enter the following name for the new Realm: `criptografia-y-seguridad-informatica`
    2. Click Save
 
-### Configuring the Keycloak Client
+#### Configuring the Keycloak Client
 
 1. From Keycloak admin panel, enter the new realm
 2. Click on `Clients` and `Create Client`
@@ -40,20 +67,17 @@
 9. Go to the `Credentials` tab
 10. Copy the `Client Secret` and paste it in the `backend/.env` file next to `CLIENT_SECRET=`
 
-### Configuring the Keycloak User
+#### Configuring the Keycloak User
 
 1. Click on `Users` and `Add User`
 2. Enter the following `username` you want and click on `create` (e.g. cripto-user)
 3. Go to the `Credentials` tab and click on `Set Password` (e.g. 1234)
 4. Enter any password you like and leave `Temporary`unchecked.
 
-### Starting the Application
-
-> docker compose up --build
-
-## Extra Docs
 
 Once the app is running, access the following endpoints to follow the corresponding OIDC flow:
+
+## Backend Capabilities
 
 ### Standard Flow
 
