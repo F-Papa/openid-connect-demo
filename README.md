@@ -4,7 +4,7 @@
 
 ### Starting an instance of Keycloak
 
-> docker run -d -p 8080:8080 -e KEYCLOAK_ADMIN=admin -e KEYCLOAK_ADMIN_PASSWORD=your-password -e KC_PROXY=edge --restart always -v /your/projet/path:/opt/jboss/keycloak/standalone/data quay.io/keycloak/keycloak:23.0.6 start-dev
+> docker run -d -p 8080:8080 -e KEYCLOAK_ADMIN=admin -e KEYCLOAK_ADMIN_PASSWORD=password -e KC_PROXY=edge --restart always -v /your/projet/path:/opt/jboss/keycloak/standalone/data quay.io/keycloak/keycloak:23.0.6 start-dev
 
 ### Configuring the Keycloak Realm
 
@@ -26,9 +26,10 @@
    4. OIDC CIBA Grant
    5. Service accounts roles
 
-5. For `Valid redirect URIs` enter:
+5. Add the frontend and backend as `Valid redirect URIs`:
 
-   - `{{URL_FOR_THIS_APP}}/auth/redirect/*` (e.g. `http://localhost:4000/auth/redirect/*`)
+   - `{{BACKEND_URL}}/*` (e.g. `http://localhost:4000/*`)
+   - `{{FRONTEND_URL}}/*` (e.g. `http://localhost:3000/*`)
 
 6. For `Web Origins`:
 
@@ -37,7 +38,7 @@
 7. Click save
 8. From `Clients` go to the new client
 9. Go to the `Credentials` tab
-10. Copy the `Client Secret` and paste it in the `.env` file next to `CLIENT_SECRET=`
+10. Copy the `Client Secret` and paste it in the `backend/.env` file next to `CLIENT_SECRET=`
 
 ### Configuring the Keycloak User
 
@@ -48,7 +49,7 @@
 
 ### Starting the Application
 
-> docker compose --build
+> docker compose up --build
 
 ## Extra Docs
 

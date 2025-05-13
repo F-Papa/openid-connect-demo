@@ -9,7 +9,7 @@ services:
           path: ./frontend/
           target: /app
     volumes:
-      - ./frontend/:/app/
+      - ./frontend/src:/app/src
     ports:
       - 3000:3000
     networks:
@@ -22,11 +22,11 @@ services:
     develop:
       watch:
         - action: sync
-          path: ./backend/
-          target: /app
+          path: ./backend/src
+          target: /app/src
     volumes:
-      # - ./backend/.env:/app/.env
-      - ./backend/:/app/
+      - ./backend/src:/app/src
+      - ./backend/.env:/app/.env
     ports:
       - 4000:4000
     networks:
